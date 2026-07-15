@@ -31,12 +31,12 @@ export default function App() {
 
   // Initialize audio elements for opening intro and background birthday song
   useEffect(() => {
-    // 1. Mama song as the opening track (perfectly cut version)
-    introAudioRef.current = new Audio("https://uniform-magenta-jq598d1p.edgeone.dev/mama_[cut_26sec]-disempurnakan-v2.mp3");
+    // 1. Mama song as the opening track (from Google Drive via local backend proxy)
+    introAudioRef.current = new Audio("/api/audio/1GpWQ-ar6PLnq6z8b-t5eIVKwE-_jaoFB");
     introAudioRef.current.volume = 0.7;
 
-    // 2. Main background Happy Birthday track by Bulan Sutena
-    mainAudioRef.current = new Audio("https://provincial-blush-isaasrqu.edgeone.dev/Happy%20Birthday%20(lagu%20ulang%20tahun%20versi%20Inggris)%20cover-BulanSutena%20-%20Suceng.mp3");
+    // 2. Main background Happy Birthday track (from Google Drive via local backend proxy)
+    mainAudioRef.current = new Audio("/api/audio/1Ci8-yn797GlZ5o6W_zMIqXs8dwpUV0gJ");
     mainAudioRef.current.loop = true;
     mainAudioRef.current.volume = 0.5;
 
