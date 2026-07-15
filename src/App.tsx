@@ -15,7 +15,6 @@ import {
   Heart,
   ChevronRight
 } from 'lucide-react';
-import { BirthdaySynthesizer } from './utils/audio';
 import Envelope from './components/Envelope';
 import Cake from './components/Cake';
 import FireworksCanvas from './components/FireworksCanvas';
@@ -27,14 +26,16 @@ export default function App() {
   const [isMuted, setIsMuted] = useState(false);
   const [showCard, setShowCard] = useState(false);
   
-  const synthRef = useRef<BirthdaySynthesizer | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Initialize synthesizer
+  // Initialize background audio with the Bulan Sutena Happy Birthday MP3 track
   useEffect(() => {
-    synthRef.current = new BirthdaySynthesizer();
+    audioRef.current = new Audio("https://provincial-blush-isaasrqu.edgeone.dev/Happy%20Birthday%20(lagu%20ulang%20tahun%20versi%20Inggris)%20cover-BulanSutena%20-%20Suceng.mp3");
+    audioRef.current.loop = true;
+    audioRef.current.volume = 0.5;
     return () => {
-      if (synthRef.current) {
-        synthRef.current.stop();
+      if (audioRef.current) {
+        audioRef.current.pause();
       }
     };
   }, []);
@@ -42,8 +43,8 @@ export default function App() {
   // Handle open envelope event
   const handleOpenEnvelope = () => {
     setIsOpen(true);
-    if (synthRef.current) {
-      synthRef.current.start();
+    if (audioRef.current) {
+      audioRef.current.play().catch(e => console.log("Audio play failed:", e));
     }
     // Fade in the birthday wishes card shortly after opening
     setTimeout(() => {
@@ -90,12 +91,12 @@ export default function App() {
     setCandlesBlownOut(false);
   };
 
-  // Toggle synthesized music mute state
+  // Toggle music mute state
   const handleToggleMute = () => {
-    if (!synthRef.current) return;
+    if (!audioRef.current) return;
     const nextMuted = !isMuted;
     setIsMuted(nextMuted);
-    synthRef.current.setVolume(nextMuted ? 0 : 0.4);
+    audioRef.current.muted = nextMuted;
   };
 
   return (
