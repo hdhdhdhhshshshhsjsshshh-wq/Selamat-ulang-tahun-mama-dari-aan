@@ -31,18 +31,55 @@ export default function App() {
 
   // Initialize audio elements for opening intro and background birthday song
   useEffect(() => {
-    // 1. Mama song as the opening track (from Google Drive via local backend proxy)
-    introAudioRef.current = new Audio("/api/audio/1GpWQ-ar6PLnq6z8b-t5eIVKwE-_jaoFB");
-    introAudioRef.current.volume = 0.7;
+    const introId = "1GpWQ-ar6PLnq6z8b-t5eIVKwE-_jaoFB";
+    const mainId = "1Ci8-yn797GlZ5o6W_zMIqXs8dwpUV0gJ";
 
-    // 2. Main background Happy Birthday track (from Google Drive via local backend proxy)
-    mainAudioRef.current = new Audio("/api/audio/1Ci8-yn797GlZ5o6W_zMIqXs8dwpUV0gJ");
-    mainAudioRef.current.loop = true;
-    mainAudioRef.current.volume = 0.5;
+    const getUrl = (id: string) => {
+      if (typeof window !== "undefined") {
+        const hostname = window.location.hostname;
+        if (
+          hostname.includes("vercel.app") || 
+          hostname.includes("github.io") || 
+          hostname.includes("vercel") || 
+          hostname.includes("amplifyapp") || 
+          hostname.includes("pages.dev")
+        ) {
+          return `https://docs.google.com/uc?export=download&id=${id}`;
+        }
+      }
+      return `/api/audio/${id}`;
+    };
+
+    // 1. Mama song as the opening track
+    const introAudio = new Audio(getUrl(introId));
+    introAudio.volume = 0.7;
+    introAudioRef.current = introAudio;
+
+    introAudio.onerror = () => {
+      console.warn("Intro audio failed to load from initial source, falling back to direct Drive URL...");
+      const currentSrc = introAudio.src || "";
+      if (currentSrc.includes("/api/audio/")) {
+        introAudio.src = `https://docs.google.com/uc?export=download&id=${introId}`;
+      }
+    };
+
+    // 2. Main background Happy Birthday track
+    const mainAudio = new Audio(getUrl(mainId));
+    mainAudio.loop = true;
+    mainAudio.volume = 0.5;
+    mainAudioRef.current = mainAudio;
+
+    mainAudio.onerror = () => {
+      console.warn("Main audio failed to load from initial source, falling back to direct Drive URL...");
+      const currentSrc = mainAudio.src || "";
+      if (currentSrc.includes("/api/audio/")) {
+        mainAudio.src = `https://docs.google.com/uc?export=download&id=${mainId}`;
+      }
+    };
 
     // Chain the intro to the main song
-    if (introAudioRef.current && mainAudioRef.current) {
-      introAudioRef.current.onended = () => {
+    if (introAudio && mainAudio) {
+      introAudio.onended = () => {
         if (mainAudioRef.current) {
           // Play the main track with the current mute preference
           mainAudioRef.current.muted = introAudioRef.current ? introAudioRef.current.muted : false;
@@ -55,8 +92,14 @@ export default function App() {
       if (introAudioRef.current) {
         introAudioRef.current.pause();
       }
+      if (introAudio) {
+        introAudio.pause();
+      }
       if (mainAudioRef.current) {
         mainAudioRef.current.pause();
+      }
+      if (mainAudio) {
+        mainAudio.pause();
       }
     };
   }, []);
