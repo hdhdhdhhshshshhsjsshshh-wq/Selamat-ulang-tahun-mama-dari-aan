@@ -26,16 +26,37 @@ export default function App() {
   const [isMuted, setIsMuted] = useState(false);
   const [showCard, setShowCard] = useState(false);
   
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const introAudioRef = useRef<HTMLAudioElement | null>(null);
+  const mainAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Initialize background audio with the Bulan Sutena Happy Birthday MP3 track
+  // Initialize audio elements for opening intro and background birthday song
   useEffect(() => {
-    audioRef.current = new Audio("https://provincial-blush-isaasrqu.edgeone.dev/Happy%20Birthday%20(lagu%20ulang%20tahun%20versi%20Inggris)%20cover-BulanSutena%20-%20Suceng.mp3");
-    audioRef.current.loop = true;
-    audioRef.current.volume = 0.5;
+    // 1. Mama song as the opening track (perfectly cut version)
+    introAudioRef.current = new Audio("https://uniform-magenta-jq598d1p.edgeone.dev/mama_[cut_26sec]-disempurnakan-v2.mp3");
+    introAudioRef.current.volume = 0.7;
+
+    // 2. Main background Happy Birthday track by Bulan Sutena
+    mainAudioRef.current = new Audio("https://provincial-blush-isaasrqu.edgeone.dev/Happy%20Birthday%20(lagu%20ulang%20tahun%20versi%20Inggris)%20cover-BulanSutena%20-%20Suceng.mp3");
+    mainAudioRef.current.loop = true;
+    mainAudioRef.current.volume = 0.5;
+
+    // Chain the intro to the main song
+    if (introAudioRef.current && mainAudioRef.current) {
+      introAudioRef.current.onended = () => {
+        if (mainAudioRef.current) {
+          // Play the main track with the current mute preference
+          mainAudioRef.current.muted = introAudioRef.current ? introAudioRef.current.muted : false;
+          mainAudioRef.current.play().catch(e => console.log("Main audio play failed:", e));
+        }
+      };
+    }
+
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
+      if (introAudioRef.current) {
+        introAudioRef.current.pause();
+      }
+      if (mainAudioRef.current) {
+        mainAudioRef.current.pause();
       }
     };
   }, []);
@@ -43,9 +64,22 @@ export default function App() {
   // Handle open envelope event
   const handleOpenEnvelope = () => {
     setIsOpen(true);
-    if (audioRef.current) {
-      audioRef.current.play().catch(e => console.log("Audio play failed:", e));
+    
+    // Play intro sound first; the main song will auto-trigger upon its completion
+    if (introAudioRef.current) {
+      introAudioRef.current.muted = isMuted;
+      introAudioRef.current.play().catch(e => {
+        console.log("Intro audio play failed, falling back directly to main audio:", e);
+        if (mainAudioRef.current) {
+          mainAudioRef.current.muted = isMuted;
+          mainAudioRef.current.play().catch(err => console.log("Fallback main audio play failed:", err));
+        }
+      });
+    } else if (mainAudioRef.current) {
+      mainAudioRef.current.muted = isMuted;
+      mainAudioRef.current.play().catch(e => console.log("Main audio play failed:", e));
     }
+
     // Fade in the birthday wishes card shortly after opening
     setTimeout(() => {
       setShowCard(true);
@@ -93,10 +127,14 @@ export default function App() {
 
   // Toggle music mute state
   const handleToggleMute = () => {
-    if (!audioRef.current) return;
     const nextMuted = !isMuted;
     setIsMuted(nextMuted);
-    audioRef.current.muted = nextMuted;
+    if (introAudioRef.current) {
+      introAudioRef.current.muted = nextMuted;
+    }
+    if (mainAudioRef.current) {
+      mainAudioRef.current.muted = nextMuted;
+    }
   };
 
   return (
