@@ -1,0 +1,6 @@
+{
+  "name": "Kartu Ucapan Ulang Tahun ke-59",
+  "description": "Sebuah kartu ucapan ulang tahun interaktif ke-59 dengan musik, lilin tiup, dan kembang api.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
